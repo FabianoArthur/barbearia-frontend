@@ -1,0 +1,4341 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sets auth cookies and returns user info" },
+          "401": { "description": "Invalid credentials" }
+        },
+        "summary": "Login with email and password",
+        "tags": ["Auth"]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created. Sets auth cookies and returns user info"
+          },
+          "409": { "description": "Email already exists" }
+        },
+        "summary": "Register a new user",
+        "tags": ["Auth"]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "responses": {
+          "200": { "description": "New auth cookies set" },
+          "401": { "description": "Invalid or expired refresh token" }
+        },
+        "summary": "Refresh access token using refresh token cookie",
+        "tags": ["Auth"]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": { "200": { "description": "Logged out successfully" } },
+        "summary": "Logout and clear auth cookies",
+        "tags": ["Auth"]
+      }
+    },
+    "/api/auth/csrf-token": {
+      "get": {
+        "operationId": "AuthController_getCsrfToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns a CSRF token and sets it as a cookie"
+          }
+        },
+        "summary": "Get a CSRF token",
+        "tags": ["Auth"]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Returns current user info" },
+          "401": { "description": "Not authenticated" }
+        },
+        "security": [{ "cookie": [] }],
+        "summary": "Get current authenticated user info",
+        "tags": ["Auth"]
+      }
+    },
+    "/api/users": {
+      "get": {
+        "operationId": "UserController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "description": "Filter by role",
+            "schema": {
+              "type": "string",
+              "enum": ["BARBER", "MANAGER", "SUPER_ADMIN"]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by name (case-insensitive)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "createdAt",
+              "example": "createdAt",
+              "type": "string",
+              "enum": ["name", "role", "createdAt"]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "desc",
+              "example": "desc",
+              "type": "string",
+              "enum": ["asc", "desc"]
+            }
+          },
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns paginated list of users" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List users (paginated, filterable, sortable)",
+        "tags": ["Users"]
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "operationId": "UserController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Returns the authenticated user" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get current authenticated user",
+        "tags": ["Users"]
+      }
+    },
+    "/api/users/establishment/{establishmentId}": {
+      "get": {
+        "operationId": "UserController_findAllByEstablishment",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Returns list of users" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List users by establishment",
+        "tags": ["Users"]
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "operationId": "UserController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns the user" },
+          "404": { "description": "User not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get user by ID",
+        "tags": ["Users"]
+      },
+      "patch": {
+        "operationId": "UserController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateUserDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User updated" },
+          "404": { "description": "User not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Update a user",
+        "tags": ["Users"]
+      },
+      "delete": {
+        "operationId": "UserController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "User deleted" },
+          "404": { "description": "User not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete a user",
+        "tags": ["Users"]
+      }
+    },
+    "/api/establishments": {
+      "get": {
+        "operationId": "EstablishmentController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Returns list of establishments" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List all establishments",
+        "tags": ["Establishments"]
+      },
+      "post": {
+        "operationId": "EstablishmentController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEstablishmentDto"
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Establishment created" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a new establishment",
+        "tags": ["Establishments"]
+      }
+    },
+    "/api/establishments/{id}": {
+      "get": {
+        "operationId": "EstablishmentController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns the establishment" },
+          "404": { "description": "Establishment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get establishment by ID",
+        "tags": ["Establishments"]
+      },
+      "patch": {
+        "operationId": "EstablishmentController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEstablishmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Establishment updated" },
+          "404": { "description": "Establishment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Update an establishment",
+        "tags": ["Establishments"]
+      },
+      "delete": {
+        "operationId": "EstablishmentController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Establishment deleted" },
+          "404": { "description": "Establishment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete an establishment",
+        "tags": ["Establishments"]
+      }
+    },
+    "/api/barbers": {
+      "get": {
+        "operationId": "BarberController_findAll",
+        "parameters": [],
+        "responses": { "200": { "description": "Returns list of barbers" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List all barbers",
+        "tags": ["Barbers"]
+      },
+      "post": {
+        "operationId": "BarberController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateBarberDto" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Barber created" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a new barber profile",
+        "tags": ["Barbers"]
+      }
+    },
+    "/api/barbers/establishment/{establishmentId}": {
+      "get": {
+        "operationId": "BarberController_findAllByEstablishment",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Returns list of barbers" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List barbers by establishment",
+        "tags": ["Barbers"]
+      }
+    },
+    "/api/barbers/service/{serviceId}": {
+      "get": {
+        "operationId": "BarberController_findAllByService",
+        "parameters": [
+          {
+            "name": "serviceId",
+            "required": true,
+            "in": "path",
+            "description": "Service ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns list of barbers that offer the service"
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List barbers that offer a specific service",
+        "tags": ["Barbers"]
+      }
+    },
+    "/api/barbers/{id}": {
+      "get": {
+        "operationId": "BarberController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns the barber" },
+          "404": { "description": "Barber not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get barber by ID",
+        "tags": ["Barbers"]
+      },
+      "patch": {
+        "operationId": "BarberController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateBarberDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Barber updated" },
+          "404": { "description": "Barber not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Update a barber (name, email, commission, services)",
+        "tags": ["Barbers"]
+      },
+      "delete": {
+        "operationId": "BarberController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Barber deleted" },
+          "404": { "description": "Barber not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete a barber",
+        "tags": ["Barbers"]
+      }
+    },
+    "/api/barbers/{id}/services": {
+      "put": {
+        "operationId": "BarberController_setServices",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "serviceIds": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Services assigned" },
+          "404": { "description": "Barber not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Replace the full set of services assigned to a barber",
+        "tags": ["Barbers"]
+      }
+    },
+    "/api/clients": {
+      "get": {
+        "operationId": "ClientController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns list of all clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ClientResponseDto" }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List all clients",
+        "tags": ["Clients"]
+      },
+      "post": {
+        "operationId": "ClientController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateClientDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Client created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ClientResponseDto" }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a new client",
+        "tags": ["Clients"]
+      }
+    },
+    "/api/clients/establishment/{establishmentId}": {
+      "get": {
+        "operationId": "ClientController_findAllByEstablishment",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns list of clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ClientResponseDto" }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List clients by establishment",
+        "tags": ["Clients"]
+      }
+    },
+    "/api/clients/{id}": {
+      "get": {
+        "operationId": "ClientController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Client ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the client",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ClientResponseDto" }
+              }
+            }
+          },
+          "404": { "description": "Client not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get client by ID",
+        "tags": ["Clients"]
+      },
+      "delete": {
+        "operationId": "ClientController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Client ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Client deleted" },
+          "404": { "description": "Client not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete a client",
+        "tags": ["Clients"]
+      }
+    },
+    "/api/services": {
+      "get": {
+        "operationId": "ServiceController_findAll",
+        "parameters": [],
+        "responses": { "200": { "description": "Returns list of services" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List all services",
+        "tags": ["Services"]
+      },
+      "post": {
+        "operationId": "ServiceController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateServiceDto" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Service created" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a new service",
+        "tags": ["Services"]
+      }
+    },
+    "/api/services/establishment/{establishmentId}": {
+      "get": {
+        "operationId": "ServiceController_findAllByEstablishment",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns list of services for the establishment"
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List services by establishment",
+        "tags": ["Services"]
+      }
+    },
+    "/api/services/barber/{barberId}": {
+      "get": {
+        "operationId": "ServiceController_findAllByBarber",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns list of services for the barber" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List services by barber",
+        "tags": ["Services"]
+      }
+    },
+    "/api/services/{id}": {
+      "get": {
+        "operationId": "ServiceController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Service ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns the service" },
+          "404": { "description": "Service not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get service by ID",
+        "tags": ["Services"]
+      },
+      "patch": {
+        "operationId": "ServiceController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Service ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateServiceDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Service updated" },
+          "404": { "description": "Service not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Update a service",
+        "tags": ["Services"]
+      },
+      "delete": {
+        "operationId": "ServiceController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Service ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Service deleted" },
+          "404": { "description": "Service not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete a service",
+        "tags": ["Services"]
+      }
+    },
+    "/api/schedule/working-hours/{barberId}": {
+      "get": {
+        "operationId": "ScheduleController_getWorkingHours",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns list of working hours" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get working hours for a barber",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/schedule/working-hours": {
+      "post": {
+        "operationId": "ScheduleController_createWorkingHour",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateWorkingHourDto" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Working hour created" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a working hour entry for a barber",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/schedule/working-hours/{id}": {
+      "delete": {
+        "operationId": "ScheduleController_deleteWorkingHour",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Working hour ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Working hour deleted" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete a working hour entry",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/schedule/time-off/{barberId}": {
+      "get": {
+        "operationId": "ScheduleController_getTimeOffs",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns list of time off entries" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get time off entries for a barber",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/schedule/time-off": {
+      "post": {
+        "operationId": "ScheduleController_createTimeOff",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateTimeOffDto" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Time off created" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a time off entry for a barber",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/schedule/time-off/{id}": {
+      "delete": {
+        "operationId": "ScheduleController_deleteTimeOff",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Time off ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Time off deleted" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete a time off entry",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/schedule/overrides/{barberId}": {
+      "get": {
+        "operationId": "ScheduleController_getScheduleOverrides",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns list of schedule overrides" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get schedule overrides for a barber",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/schedule/overrides": {
+      "post": {
+        "operationId": "ScheduleController_createScheduleOverride",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateScheduleOverrideDto"
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Schedule override created" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a schedule override for a barber",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/schedule/overrides/{id}": {
+      "delete": {
+        "operationId": "ScheduleController_deleteScheduleOverride",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Schedule override ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Schedule override deleted" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete a schedule override",
+        "tags": ["Schedule"]
+      }
+    },
+    "/api/appointments": {
+      "get": {
+        "description": "Returns a paginated list of appointments. Filter by establishment, barber, date range, and status.",
+        "operationId": "AppointmentController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (1-indexed)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by establishment ID",
+            "schema": { "example": "clx0987654321", "type": "string" }
+          },
+          {
+            "name": "barberId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by barber ID",
+            "schema": { "example": "clx1234567890", "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter start date (ISO format)",
+            "schema": {
+              "example": "2026-03-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter end date (ISO format)",
+            "schema": {
+              "example": "2026-03-31T23:59:59.999Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by appointment status. Use LATE for appointments past their start time but not yet started.",
+            "schema": {
+              "example": "SCHEDULED",
+              "type": "string",
+              "enum": [
+                "SCHEDULED",
+                "CONFIRMATION_PENDING",
+                "CONFIRMED",
+                "IN_PROGRESS",
+                "DONE",
+                "CANCELED",
+                "NO_SHOW",
+                "LATE"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "default": "startsAt",
+              "example": "startsAt",
+              "type": "string",
+              "enum": [
+                "startsAt",
+                "endsAt",
+                "status",
+                "createdAt",
+                "priceSnapshot"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction",
+            "schema": {
+              "default": "desc",
+              "example": "desc",
+              "type": "string",
+              "enum": ["asc", "desc"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of appointments with total revenue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AppointmentListItemDto"
+                      },
+                      "description": "List of appointment records"
+                    },
+                    "meta": { "$ref": "#/components/schemas/PaginationMeta" },
+                    "totalRevenue": {
+                      "type": "number",
+                      "description": "Sum of priceSnapshot across all matching appointments (not just the current page)",
+                      "example": 1250
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List appointments with pagination and filters",
+        "tags": ["Appointments"]
+      },
+      "post": {
+        "operationId": "AppointmentController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateAppointmentDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Appointment created with price snapshot" },
+          "409": { "description": "Time slot conflict" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a new appointment",
+        "tags": ["Appointments"]
+      }
+    },
+    "/api/appointments/barber/{barberId}/daily-summary": {
+      "get": {
+        "description": "Returns appointments for a barber on a given date with completed count and commission total.",
+        "operationId": "AppointmentController_getBarberDailySummary",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Date in YYYY-MM-DD format (default: today)",
+            "schema": { "example": "2025-02-16", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Daily summary with appointments and totals" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Barber daily summary",
+        "tags": ["Appointments"]
+      }
+    },
+    "/api/appointments/{id}": {
+      "get": {
+        "operationId": "AppointmentController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns the appointment" },
+          "404": { "description": "Appointment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get appointment by ID",
+        "tags": ["Appointments"]
+      },
+      "delete": {
+        "operationId": "AppointmentController_deleteAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Appointment deleted" },
+          "404": { "description": "Appointment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete an appointment",
+        "tags": ["Appointments"]
+      }
+    },
+    "/api/appointments/{id}/status": {
+      "patch": {
+        "operationId": "AppointmentController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateStatusDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Status updated" },
+          "404": { "description": "Appointment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Update appointment status (generic)",
+        "tags": ["Appointments"]
+      }
+    },
+    "/api/appointments/{id}/start": {
+      "post": {
+        "operationId": "AppointmentController_startAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Appointment started" },
+          "201": { "description": "" },
+          "400": { "description": "Invalid status transition" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Start an appointment (transition to IN_PROGRESS)",
+        "tags": ["Appointments"]
+      }
+    },
+    "/api/appointments/{id}/finish": {
+      "post": {
+        "operationId": "AppointmentController_finishAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Appointment finished" },
+          "201": { "description": "" },
+          "400": { "description": "Invalid status transition" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Finish an appointment (transition to DONE, creates finance record)",
+        "tags": ["Appointments"]
+      }
+    },
+    "/api/appointments/{id}/no-show": {
+      "post": {
+        "operationId": "AppointmentController_noShowAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Marked as no-show" },
+          "201": { "description": "" },
+          "400": { "description": "Invalid status transition" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Mark appointment as no-show",
+        "tags": ["Appointments"]
+      }
+    },
+    "/api/appointments/{id}/cancel": {
+      "post": {
+        "operationId": "AppointmentController_cancelAppointment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Appointment canceled" },
+          "201": { "description": "" },
+          "400": { "description": "Invalid status transition" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Cancel an appointment",
+        "tags": ["Appointments"]
+      }
+    },
+    "/api/sse/barber/{barberId}/dashboard": {
+      "get": {
+        "description": "Server-Sent Events stream for real-time booking status changes on the barber dashboard.",
+        "operationId": "AppointmentSseController_barberDashboard",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID to subscribe to",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Barber dashboard real-time updates",
+        "tags": ["SSE"]
+      }
+    },
+    "/api/notifications/send-confirmation/{appointmentId}": {
+      "post": {
+        "description": "Sends the confirmation WhatsApp for a SCHEDULED appointment. Performs the same status transition (SCHEDULED -> CONFIRMATION_PENDING), audit logging, and WhatsApp delivery as the automated cron.",
+        "operationId": "NotificationController_sendConfirmation",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Confirmation sent and status transitioned" },
+          "201": { "description": "" },
+          "400": {
+            "description": "Appointment is not in SCHEDULED status or has no phone"
+          },
+          "404": { "description": "Appointment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Manually trigger confirmation WhatsApp",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/notifications/send-reminder/{appointmentId}": {
+      "post": {
+        "description": "Sends the reminder WhatsApp for a CONFIRMED appointment that has not yet received a reminder. Updates reminderSentAt and stores the Twilio message SID.",
+        "operationId": "NotificationController_sendReminder",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Reminder sent" },
+          "201": { "description": "" },
+          "400": { "description": "Invalid state for sending reminder" },
+          "404": { "description": "Appointment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Manually trigger reminder WhatsApp",
+        "tags": ["Notifications"]
+      }
+    },
+    "/api/payments": {
+      "get": {
+        "description": "Returns paginated payments filtered by establishment, status, method, and date range.",
+        "operationId": "PaymentController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (1-indexed)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by establishment ID",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by payment status (supports multiple values)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["PENDING", "COMPLETED", "REFUNDED", "FAILED"]
+              }
+            }
+          },
+          {
+            "name": "method",
+            "required": false,
+            "in": "query",
+            "description": "Filter by payment method (supports multiple values)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["CASH", "PIX", "CREDIT_CARD", "DEBIT_CARD"]
+              }
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO 8601)",
+            "schema": { "example": "2026-01-01", "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO 8601)",
+            "schema": { "example": "2026-12-31", "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Paginated list of payments" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List payments with filters",
+        "tags": ["Payments"]
+      }
+    },
+    "/api/payments/refunds": {
+      "get": {
+        "description": "Returns paginated refunded payments filtered by establishment.",
+        "operationId": "PaymentController_findRefunds",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by establishment ID",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (1-indexed)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Paginated list of refunds" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List refunded payments",
+        "tags": ["Payments"]
+      }
+    },
+    "/api/payments/refunds/{id}": {
+      "get": {
+        "operationId": "PaymentController_findRefundById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Refund details" },
+          "404": { "description": "Refund not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get refund details by ID",
+        "tags": ["Payments"]
+      }
+    },
+    "/api/payments/appointment/{appointmentId}": {
+      "get": {
+        "operationId": "PaymentController_findByAppointment",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "Appointment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Payment details" },
+          "404": { "description": "Payment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get payment for a specific appointment",
+        "tags": ["Payments"]
+      }
+    },
+    "/api/payments/{id}": {
+      "get": {
+        "operationId": "PaymentController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Payment details" },
+          "404": { "description": "Payment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get payment by ID",
+        "tags": ["Payments"]
+      }
+    },
+    "/api/payments/{id}/confirm": {
+      "patch": {
+        "description": "Sets the payment method and marks the payment as completed.",
+        "operationId": "PaymentController_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ConfirmPaymentDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Payment confirmed" },
+          "400": { "description": "Invalid status transition" },
+          "404": { "description": "Payment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Confirm a pending payment",
+        "tags": ["Payments"]
+      }
+    },
+    "/api/payments/{id}/refund": {
+      "patch": {
+        "description": "Marks the payment as refunded. Partial refund is supported via the amount field.",
+        "operationId": "PaymentController_refund",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RefundPaymentDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Payment refunded" },
+          "400": { "description": "Invalid status transition or amount" },
+          "404": { "description": "Payment not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Refund a completed payment",
+        "tags": ["Payments"]
+      }
+    },
+    "/api/finance/barber/{barberId}/summary": {
+      "get": {
+        "operationId": "FinanceController_getBarberEarningsSummary",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns barber earnings summary" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get earnings summary for a barber",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/dashboard": {
+      "get": {
+        "operationId": "FinanceController_getDashboard",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "period",
+            "required": false,
+            "in": "query",
+            "description": "Time period filter",
+            "schema": {
+              "default": "month",
+              "type": "string",
+              "enum": ["today", "week", "month", "quarter", "year", "all"]
+            }
+          },
+          {
+            "name": "comparePrevious",
+            "required": false,
+            "in": "query",
+            "description": "Include comparison with previous period",
+            "schema": { "default": true, "type": "boolean" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard with revenue, growth, and composition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Financial dashboard overview with KPIs and comparisons",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/analytics/revenue": {
+      "get": {
+        "operationId": "FinanceController_getRevenueAnalytics",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": { "example": "2026-01-01", "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": { "example": "2026-12-31", "type": "string" }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "description": "Time grouping granularity",
+            "schema": {
+              "default": "month",
+              "type": "string",
+              "enum": ["hour", "day", "week", "month", "quarter", "year"]
+            }
+          },
+          {
+            "name": "barberId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by barber ID",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "serviceId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by service ID",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "comparePrevious",
+            "required": false,
+            "in": "query",
+            "description": "Include previous-period data for side-by-side comparison",
+            "schema": { "default": false, "type": "boolean" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revenue breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevenueAnalyticsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Detailed revenue analytics by period, barber, and service",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/analytics/barbers": {
+      "get": {
+        "operationId": "FinanceController_getBarberPerformance",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "barberId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by specific barber ID",
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-barber performance data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BarberPerformanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Barber performance metrics and ranking",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/analytics/trends": {
+      "get": {
+        "operationId": "FinanceController_getTrends",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": { "example": "2026-01-01", "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": { "example": "2026-12-31", "type": "string" }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "description": "Time grouping granularity",
+            "schema": {
+              "default": "month",
+              "type": "string",
+              "enum": ["hour", "day", "week", "month", "quarter", "year"]
+            }
+          },
+          {
+            "name": "metric",
+            "required": false,
+            "in": "query",
+            "description": "Primary metric to analyze",
+            "schema": {
+              "default": "revenue",
+              "type": "string",
+              "enum": ["revenue", "bookings", "tips", "fees"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Time series data with growth rates and peaks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimeSeriesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Time-series revenue trends with period comparison",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/analytics/services": {
+      "get": {
+        "operationId": "FinanceController_getServicePerformance",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "serviceId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by specific service ID",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "description": "Trend granularity",
+            "schema": {
+              "default": "month",
+              "type": "string",
+              "enum": ["day", "week", "month", "quarter", "year"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-service performance data with trends",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServicePerformanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Service performance analytics and demand trends",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/analytics/customers": {
+      "get": {
+        "operationId": "FinanceController_getCustomerAnalytics",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "topLimit",
+            "required": false,
+            "in": "query",
+            "description": "Number of top customers to return",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer metrics and top customers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAnalyticsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Customer behavior analytics (LTV, retention, churn)",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/analytics/capacity": {
+      "get": {
+        "operationId": "FinanceController_getCapacity",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": { "example": "2026-02-01", "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": { "example": "2026-02-28", "type": "string" }
+          },
+          {
+            "name": "barberId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by specific barber ID",
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilization rates and capacity data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CapacityResponseDto" }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Capacity utilization per barber with lost revenue estimates",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/analytics/breakdown": {
+      "get": {
+        "operationId": "FinanceController_getFinancialBreakdown",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "barberId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by barber ID",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "serviceId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by service ID",
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revenue composition and fee ratios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialBreakdownResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Detailed financial breakdown (fees, discounts, refunds)",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/analytics/forecast": {
+      "get": {
+        "operationId": "FinanceController_getForecast",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "description": "Forecast granularity",
+            "schema": {
+              "default": "month",
+              "type": "string",
+              "enum": ["day", "week", "month"]
+            }
+          },
+          {
+            "name": "periodsAhead",
+            "required": false,
+            "in": "query",
+            "description": "Number of periods to forecast",
+            "schema": {
+              "minimum": 1,
+              "maximum": 12,
+              "default": 3,
+              "type": "number"
+            }
+          },
+          {
+            "name": "lookbackPeriods",
+            "required": false,
+            "in": "query",
+            "description": "Number of historical periods for moving average",
+            "schema": {
+              "minimum": 3,
+              "maximum": 24,
+              "default": 12,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Forecast, anomalies, and seasonal patterns",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Revenue forecasting with anomaly detection and seasonal patterns",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/reports/export": {
+      "get": {
+        "operationId": "FinanceController_exportReport",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to aggregate)",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "format",
+            "required": true,
+            "in": "query",
+            "description": "Export format",
+            "schema": { "type": "string", "enum": ["csv", "json"] }
+          },
+          {
+            "name": "reportType",
+            "required": true,
+            "in": "query",
+            "description": "Report type",
+            "schema": {
+              "type": "string",
+              "enum": ["revenue", "barber", "service", "customer", "tax"]
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Downloadable report file" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Export financial report as CSV or JSON",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/reconciliation/{establishmentId}": {
+      "post": {
+        "operationId": "FinanceController_reconcileFees",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FeeImportDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reconciliation results with mismatches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeeReconciliationResponseDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeeReconciliationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Reconcile imported fees against calculated fees",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/reconciliation/{establishmentId}/report": {
+      "get": {
+        "operationId": "FinanceController_getReconciliationReport",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fee reconciliation summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeeReconciliationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get fee reconciliation report",
+        "tags": ["Finance"]
+      }
+    },
+    "/api/finance/fees": {
+      "get": {
+        "operationId": "PlatformFeeController_getByEstablishment",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Establishment ID (omit to use own)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns list of platform fee configs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlatformFeeResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Get all fee configs for an establishment",
+        "tags": ["Finance - Platform Fees"]
+      }
+    },
+    "/api/finance/fees/{establishmentId}": {
+      "post": {
+        "operationId": "PlatformFeeController_create",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreatePlatformFeeDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Fee config created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformFeeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Create a new platform fee config",
+        "tags": ["Finance - Platform Fees"]
+      }
+    },
+    "/api/finance/fees/{feeId}": {
+      "put": {
+        "operationId": "PlatformFeeController_update",
+        "parameters": [
+          {
+            "name": "feeId",
+            "required": true,
+            "in": "path",
+            "description": "Fee config ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdatePlatformFeeDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fee config updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformFeeResponseDto"
+                }
+              }
+            }
+          },
+          "404": { "description": "Fee config not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Update a platform fee config",
+        "tags": ["Finance - Platform Fees"]
+      }
+    },
+    "/api/finance/expenses": {
+      "post": {
+        "operationId": "ExpenseController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateExpenseDto" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Expense created" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Register a new expense",
+        "tags": ["Finance - Expenses"]
+      },
+      "get": {
+        "operationId": "ExpenseController_findAll",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by establishment ID",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "barberId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by barber ID",
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Filter by category",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "RENT",
+                "SUPPLIES",
+                "UTILITIES",
+                "MAINTENANCE",
+                "SALARY",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO 8601)",
+            "schema": { "example": "2026-01-01", "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO 8601)",
+            "schema": { "example": "2026-12-31", "type": "string" }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": { "minimum": 1, "default": 1, "type": "number" }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": { "200": { "description": "List of expenses" } },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "List expenses with filters",
+        "tags": ["Finance - Expenses"]
+      }
+    },
+    "/api/finance/expenses/{id}": {
+      "put": {
+        "operationId": "ExpenseController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Expense ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateExpenseDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Expense updated" },
+          "404": { "description": "Expense not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Update an expense",
+        "tags": ["Finance - Expenses"]
+      },
+      "delete": {
+        "operationId": "ExpenseController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Expense ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Expense deleted" },
+          "404": { "description": "Expense not found" }
+        },
+        "security": [{ "csrf-token": [] }, { "bearer": [] }],
+        "summary": "Delete an expense",
+        "tags": ["Finance - Expenses"]
+      }
+    },
+    "/api/public/booking/establishments": {
+      "get": {
+        "operationId": "PublicBookingController_listEstablishments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns public establishment list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicEstablishmentResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List all establishments (public)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/establishments/{id}": {
+      "get": {
+        "operationId": "PublicBookingController_getEstablishment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a single public establishment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicEstablishmentResponseDto"
+                }
+              }
+            }
+          },
+          "404": { "description": "Establishment not found" }
+        },
+        "summary": "Get establishment by ID (public)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/establishments/{establishmentId}/services": {
+      "get": {
+        "operationId": "PublicBookingController_listServices",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns public service list for the establishment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicServiceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List services for an establishment (public)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/establishments/{establishmentId}/services/{serviceId}/barbers": {
+      "get": {
+        "operationId": "PublicBookingController_listBarbersByService",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "serviceId",
+            "required": true,
+            "in": "path",
+            "description": "Service ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns public barber list filtered by service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicBarberResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List barbers that offer a specific service in an establishment (public)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/establishments/{establishmentId}/barbers": {
+      "get": {
+        "operationId": "PublicBookingController_listBarbers",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": true,
+            "in": "path",
+            "description": "Establishment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns public barber list for the establishment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicBarberResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List barbers for an establishment (public)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/barbers/{barberId}/working-hours": {
+      "get": {
+        "description": "Returns effective working hours per date, excluding past hours (for today) and time ranges occupied by active appointments.",
+        "operationId": "PublicBookingController_getBarberWorkingHours",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date in ISO format. Defaults to today.",
+            "schema": { "example": "2026-02-09", "type": "string" }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date in ISO format. Defaults to startDate + 7 days.",
+            "schema": { "example": "2026-02-16", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns available working periods grouped by date (date, weekday, periods[])"
+          }
+        },
+        "summary": "Get available working hours for a barber (public)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/barbers/{barberId}/availability": {
+      "get": {
+        "operationId": "PublicBookingController_getAvailability",
+        "parameters": [
+          {
+            "name": "barberId",
+            "required": true,
+            "in": "path",
+            "description": "Barber ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Date in ISO format (e.g. 2026-03-15)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "serviceId",
+            "required": true,
+            "in": "query",
+            "description": "Service ID (used to determine slot duration)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Returns list of available time slots" }
+        },
+        "summary": "Get available time slots for a barber on a specific date",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/appointments": {
+      "post": {
+        "operationId": "PublicBookingController_createPublicAppointment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePublicAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Appointment created" },
+          "409": { "description": "Time slot conflict" }
+        },
+        "summary": "Create a public appointment (auto-creates client if needed)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/appointments/{code}/confirm": {
+      "post": {
+        "operationId": "PublicBookingController_confirmByCode",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Appointment code",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Appointment confirmed" },
+          "201": { "description": "" },
+          "400": { "description": "Cannot confirm appointment" },
+          "404": { "description": "Appointment not found" }
+        },
+        "summary": "Confirm an appointment by code (public)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/appointments/{code}/cancel": {
+      "post": {
+        "operationId": "PublicBookingController_cancelByCode",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Appointment code",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Appointment cancelled" },
+          "201": { "description": "" },
+          "400": { "description": "Cannot cancel appointment" },
+          "404": { "description": "Appointment not found" }
+        },
+        "summary": "Cancel an appointment by code (public)",
+        "tags": ["Public Booking"]
+      }
+    },
+    "/api/public/booking/appointments/{code}/reschedule": {
+      "post": {
+        "operationId": "PublicBookingController_rescheduleByCode",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Appointment code",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Appointment rescheduled" },
+          "201": { "description": "" },
+          "400": { "description": "Cannot reschedule appointment" },
+          "404": { "description": "Appointment not found" },
+          "409": { "description": "New time slot conflicts" }
+        },
+        "summary": "Reschedule an appointment by code (public)",
+        "tags": ["Public Booking"]
+      }
+    }
+  },
+  "info": {
+    "title": "Barbearia API",
+    "description": "Multi-establishment barbershop management API.\n\n## CSRF Protection\nState-changing requests (POST / PUT / PATCH / DELETE) that rely on **cookie-based** auth\nrequire a CSRF token. The flow:\n1. Call `POST /auth/login` (or `/auth/register` / `/auth/refresh`) — the response sets a `csrf_token` cookie.\n   Alternatively call `GET /auth/csrf-token` to obtain one at any time.\n2. Read the `csrf_token` cookie value (it is **not** httpOnly).\n3. Send it back on every mutating request as the `x-csrf-token` header.\n\nRequests using a **Bearer** token in the `Authorization` header are exempt from CSRF.",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": { "scheme": "bearer", "bearerFormat": "JWT", "type": "http" },
+      "cookie": { "type": "apiKey", "in": "cookie", "name": "access_token" },
+      "csrf-token": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-csrf-token",
+        "description": "CSRF token. Read the csrf_token cookie (set on login/register/refresh) and send it here."
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "password": { "type": "string", "example": "password123" }
+        },
+        "required": ["email", "password"]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "John Doe" },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6,
+            "example": "password123"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["BARBER", "MANAGER", "SUPER_ADMIN"],
+            "example": "BARBER"
+          },
+          "establishmentId": { "type": "string", "example": "clx1234567890" }
+        },
+        "required": ["name", "email", "password", "role"]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "John Doe" },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["BARBER", "MANAGER", "SUPER_ADMIN"],
+            "example": "BARBER"
+          }
+        }
+      },
+      "CreateEstablishmentDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Barber Shop Downtown" },
+          "address": {
+            "type": "string",
+            "example": "Rua Augusta, 1234 - Consolacao, Sao Paulo"
+          },
+          "lat": { "type": "number", "example": -23.5505 },
+          "lng": { "type": "number", "example": -46.6333 },
+          "monthlyCost": {
+            "type": "number",
+            "example": 2500,
+            "description": "Monthly operational cost"
+          }
+        },
+        "required": ["name"]
+      },
+      "UpdateEstablishmentDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Barber Shop Uptown" },
+          "address": {
+            "type": "string",
+            "example": "Rua Augusta, 1234 - Consolacao, Sao Paulo"
+          },
+          "lat": { "type": "number", "example": -23.5505 },
+          "lng": { "type": "number", "example": -46.6333 },
+          "monthlyCost": {
+            "type": "number",
+            "example": 3000,
+            "description": "Monthly operational cost"
+          }
+        }
+      },
+      "CreateBarberDto": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "example": "clx1234567890" },
+          "establishmentId": { "type": "string", "example": "clx0987654321" },
+          "commissionPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 50,
+            "description": "Commission percentage (0-100)"
+          },
+          "serviceIds": {
+            "example": ["svc-uuid-1", "svc-uuid-2"],
+            "description": "Service IDs to assign to this barber",
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["userId", "establishmentId"]
+      },
+      "UpdateBarberDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "João Silva",
+            "description": "Barber display name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@example.com",
+            "description": "Barber email"
+          },
+          "commissionPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 60,
+            "description": "Commission percentage (0-100)"
+          },
+          "serviceIds": {
+            "example": ["svc-uuid-1", "svc-uuid-2"],
+            "description": "Service IDs to assign (replaces current set)",
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "ClientResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "establishmentId": { "type": "string" },
+          "name": { "type": "string" },
+          "cpf": {
+            "type": "string",
+            "example": "123.***.***-**",
+            "description": "Masked CPF (first 3 digits only)"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "example": "*******8888",
+            "description": "Masked phone (last 4 digits only)"
+          },
+          "createdAt": { "format": "date-time", "type": "string" },
+          "updatedAt": { "format": "date-time", "type": "string" }
+        },
+        "required": [
+          "id",
+          "establishmentId",
+          "name",
+          "cpf",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateClientDto": {
+        "type": "object",
+        "properties": {
+          "establishmentId": { "type": "string", "example": "clx0987654321" },
+          "name": { "type": "string", "example": "Carlos Silva" },
+          "cpf": {
+            "type": "string",
+            "example": "12345678900",
+            "description": "Brazilian CPF (digits only)"
+          },
+          "phone": { "type": "string", "example": "11999998888" }
+        },
+        "required": ["establishmentId", "name", "cpf"]
+      },
+      "CreateServiceDto": {
+        "type": "object",
+        "properties": {
+          "establishmentId": {
+            "type": "string",
+            "example": "clx0987654321",
+            "description": "Establishment ID that owns this service"
+          },
+          "name": { "type": "string", "example": "Haircut" },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "example": 45,
+            "description": "Service price"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 1,
+            "example": 30,
+            "description": "Duration in minutes"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Includes wash and styling",
+            "description": "Service notes"
+          }
+        },
+        "required": ["establishmentId", "name", "price", "durationMinutes"]
+      },
+      "UpdateServiceDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Beard Trim" },
+          "price": { "type": "number", "minimum": 0, "example": 35 },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 1,
+            "example": 20,
+            "description": "Duration in minutes"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Includes wash and styling",
+            "description": "Service notes"
+          }
+        }
+      },
+      "CreateWorkingHourDto": {
+        "type": "object",
+        "properties": {
+          "barberId": { "type": "string", "example": "clx1234567890" },
+          "weekday": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6,
+            "example": 1,
+            "description": "Day of week (0=Sunday, 6=Saturday)"
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "/^\\d{2}:\\d{2}$/",
+            "example": "09:00",
+            "description": "Start time in HH:mm format"
+          },
+          "endTime": {
+            "type": "string",
+            "pattern": "/^\\d{2}:\\d{2}$/",
+            "example": "18:00",
+            "description": "End time in HH:mm format"
+          }
+        },
+        "required": ["barberId", "weekday", "startTime", "endTime"]
+      },
+      "CreateTimeOffDto": {
+        "type": "object",
+        "properties": {
+          "barberId": { "type": "string", "example": "clx1234567890" },
+          "date": {
+            "type": "string",
+            "example": "2026-03-15",
+            "description": "Date in ISO format"
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "/^\\d{2}:\\d{2}$/",
+            "example": "09:00",
+            "description": "Start time in HH:mm format (omit for full day)"
+          },
+          "endTime": {
+            "type": "string",
+            "pattern": "/^\\d{2}:\\d{2}$/",
+            "example": "12:00",
+            "description": "End time in HH:mm format (omit for full day)"
+          },
+          "reason": { "type": "string", "example": "Medical appointment" }
+        },
+        "required": ["barberId", "date"]
+      },
+      "CreateScheduleOverrideDto": {
+        "type": "object",
+        "properties": {
+          "barberId": { "type": "string", "example": "clx1234567890" },
+          "startDate": {
+            "type": "string",
+            "example": "2026-03-01",
+            "description": "Start date in ISO format"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2026-03-31",
+            "description": "End date in ISO format"
+          },
+          "weekday": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6,
+            "example": 6,
+            "description": "Day of week (0=Sunday, 6=Saturday)"
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "/^\\d{2}:\\d{2}$/",
+            "example": "10:00",
+            "description": "Start time in HH:mm format"
+          },
+          "endTime": {
+            "type": "string",
+            "pattern": "/^\\d{2}:\\d{2}$/",
+            "example": "14:00",
+            "description": "End time in HH:mm format"
+          },
+          "reason": { "type": "string", "example": "Holiday special hours" }
+        },
+        "required": ["barberId", "startDate", "endDate", "startTime", "endTime"]
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "number",
+            "example": 150,
+            "description": "Total number of items"
+          },
+          "itemsPerPage": {
+            "type": "number",
+            "example": 20,
+            "description": "Number of items per page"
+          },
+          "currentPage": {
+            "type": "number",
+            "example": 1,
+            "description": "Current page number"
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 8,
+            "description": "Total number of pages"
+          }
+        },
+        "required": ["totalItems", "itemsPerPage", "currentPage", "totalPages"]
+      },
+      "AppointmentListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-1234",
+            "description": "Appointment ID"
+          },
+          "barberName": {
+            "type": "string",
+            "example": "João Silva",
+            "description": "Barber name"
+          },
+          "barberId": {
+            "type": "string",
+            "example": "uuid-barber",
+            "description": "Barber ID"
+          },
+          "date": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-15T14:00:00.000Z",
+            "description": "Appointment date/time"
+          },
+          "clientName": {
+            "type": "string",
+            "example": "Carlos Souza",
+            "description": "Client name"
+          },
+          "clientId": {
+            "type": "string",
+            "example": "uuid-client",
+            "description": "Client ID"
+          },
+          "serviceName": {
+            "type": "string",
+            "example": "Corte Masculino",
+            "description": "Service name"
+          },
+          "serviceId": {
+            "type": "string",
+            "example": "uuid-service",
+            "description": "Service ID"
+          },
+          "serviceValue": {
+            "type": "number",
+            "example": 45,
+            "description": "Service price snapshot"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMATION_PENDING",
+              "CONFIRMED",
+              "IN_PROGRESS",
+              "DONE",
+              "CANCELED",
+              "NO_SHOW"
+            ],
+            "example": "SCHEDULED",
+            "description": "Current appointment status"
+          }
+        },
+        "required": [
+          "id",
+          "barberName",
+          "barberId",
+          "date",
+          "clientName",
+          "clientId",
+          "serviceName",
+          "serviceId",
+          "serviceValue",
+          "status"
+        ]
+      },
+      "CreateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "establishmentId": { "type": "string", "example": "clx0987654321" },
+          "barberId": { "type": "string", "example": "clx1234567890" },
+          "clientId": { "type": "string", "example": "clxclient12345" },
+          "serviceId": { "type": "string", "example": "clxservice12345" },
+          "startsAt": {
+            "type": "string",
+            "example": "2026-03-15T10:00:00.000Z",
+            "description": "Appointment start time in ISO format"
+          }
+        },
+        "required": [
+          "establishmentId",
+          "barberId",
+          "clientId",
+          "serviceId",
+          "startsAt"
+        ]
+      },
+      "UpdateStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "CONFIRMATION_PENDING",
+              "CONFIRMED",
+              "IN_PROGRESS",
+              "DONE",
+              "CANCELED",
+              "NO_SHOW"
+            ],
+            "example": "DONE",
+            "description": "New appointment status"
+          }
+        },
+        "required": ["status"]
+      },
+      "ConfirmPaymentDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["CASH", "PIX", "CREDIT_CARD", "DEBIT_CARD"],
+            "description": "Payment method used",
+            "example": "PIX"
+          },
+          "tipAmount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Tip amount given to the barber",
+            "example": 10
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Optional notes about the payment",
+            "example": "Paid via PIX key"
+          }
+        },
+        "required": ["method"]
+      },
+      "RefundPaymentDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0.01,
+            "description": "Refund amount (defaults to full payment amount if omitted)",
+            "example": 50
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Reason for the refund",
+            "example": "Client unsatisfied with service"
+          }
+        }
+      },
+      "TodayStatsDto": {
+        "type": "object",
+        "properties": {
+          "revenue": { "type": "number" },
+          "bookingCount": { "type": "number" },
+          "tips": { "type": "number" }
+        },
+        "required": ["revenue", "bookingCount", "tips"]
+      },
+      "PeriodComparisonDto": {
+        "type": "object",
+        "properties": {
+          "currentGrossRevenue": { "type": "number" },
+          "previousGrossRevenue": { "type": "number" },
+          "currentNetRevenue": { "type": "number" },
+          "previousNetRevenue": { "type": "number" },
+          "currentBookings": { "type": "number" },
+          "previousBookings": { "type": "number" },
+          "currentTips": { "type": "number" },
+          "previousTips": { "type": "number" },
+          "currentPlatformFees": { "type": "number" },
+          "previousPlatformFees": { "type": "number" },
+          "revenueGrowthRate": {
+            "type": "number",
+            "description": "Gross revenue growth rate (%)"
+          },
+          "netRevenueGrowthRate": {
+            "type": "number",
+            "description": "Net revenue growth rate (%)"
+          },
+          "bookingsGrowthRate": {
+            "type": "number",
+            "description": "Bookings growth rate (%)"
+          },
+          "tipsGrowthRate": {
+            "type": "number",
+            "description": "Tips growth rate (%)"
+          },
+          "feesGrowthRate": {
+            "type": "number",
+            "description": "Platform fees growth rate (%)"
+          }
+        },
+        "required": [
+          "currentGrossRevenue",
+          "previousGrossRevenue",
+          "currentNetRevenue",
+          "previousNetRevenue",
+          "currentBookings",
+          "previousBookings",
+          "currentTips",
+          "previousTips",
+          "currentPlatformFees",
+          "previousPlatformFees",
+          "revenueGrowthRate",
+          "netRevenueGrowthRate",
+          "bookingsGrowthRate",
+          "tipsGrowthRate",
+          "feesGrowthRate"
+        ]
+      },
+      "TopPerformerBarberDto": {
+        "type": "object",
+        "properties": {
+          "barberId": { "type": "string" },
+          "barberName": { "type": "string" },
+          "grossRevenue": { "type": "number" }
+        },
+        "required": ["barberId", "barberName", "grossRevenue"]
+      },
+      "TopPerformerServiceDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": { "type": "string" },
+          "serviceName": { "type": "string" },
+          "bookingCount": { "type": "number" }
+        },
+        "required": ["serviceId", "serviceName", "bookingCount"]
+      },
+      "RevenueCompositionDto": {
+        "type": "object",
+        "properties": {
+          "bookingRevenue": { "type": "number" },
+          "tipsRevenue": { "type": "number" },
+          "platformFees": { "type": "number" },
+          "refunds": { "type": "number" }
+        },
+        "required": ["bookingRevenue", "tipsRevenue", "platformFees", "refunds"]
+      },
+      "DashboardResponseDto": {
+        "type": "object",
+        "properties": {
+          "grossRevenue": { "type": "number" },
+          "netRevenue": { "type": "number" },
+          "totalBookings": { "type": "number" },
+          "totalTips": { "type": "number" },
+          "totalPlatformFees": { "type": "number" },
+          "averageOrderValue": { "type": "number" },
+          "today": { "$ref": "#/components/schemas/TodayStatsDto" },
+          "periodComparison": {
+            "$ref": "#/components/schemas/PeriodComparisonDto"
+          },
+          "topBarber": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/TopPerformerBarberDto" }]
+          },
+          "topService": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/TopPerformerServiceDto" }]
+          },
+          "revenueComposition": {
+            "$ref": "#/components/schemas/RevenueCompositionDto"
+          },
+          "generatedAt": { "type": "string" }
+        },
+        "required": [
+          "grossRevenue",
+          "netRevenue",
+          "totalBookings",
+          "totalTips",
+          "totalPlatformFees",
+          "averageOrderValue",
+          "today",
+          "revenueComposition",
+          "generatedAt"
+        ]
+      },
+      "RevenueSummaryDto": {
+        "type": "object",
+        "properties": {
+          "grossRevenue": { "type": "number" },
+          "netRevenue": { "type": "number" },
+          "totalBookings": { "type": "number" },
+          "totalTips": { "type": "number" },
+          "totalPlatformFees": { "type": "number" },
+          "totalRefunds": { "type": "number" },
+          "averageOrderValue": { "type": "number" }
+        },
+        "required": [
+          "grossRevenue",
+          "netRevenue",
+          "totalBookings",
+          "totalTips",
+          "totalPlatformFees",
+          "totalRefunds",
+          "averageOrderValue"
+        ]
+      },
+      "PeriodRevenueDto": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string" },
+          "grossRevenue": { "type": "number" },
+          "netRevenue": { "type": "number" },
+          "totalTips": { "type": "number" },
+          "totalPlatformFees": { "type": "number" },
+          "bookingCount": { "type": "number" }
+        },
+        "required": [
+          "period",
+          "grossRevenue",
+          "netRevenue",
+          "totalTips",
+          "totalPlatformFees",
+          "bookingCount"
+        ]
+      },
+      "BarberRevenueDto": {
+        "type": "object",
+        "properties": {
+          "barberId": { "type": "string" },
+          "barberName": { "type": "string" },
+          "grossRevenue": { "type": "number" },
+          "netRevenue": { "type": "number" },
+          "totalTips": { "type": "number" },
+          "totalPlatformFees": { "type": "number" },
+          "bookingCount": { "type": "number" },
+          "averageOrderValue": { "type": "number" },
+          "tipsToRevenueRatio": { "type": "number" }
+        },
+        "required": [
+          "barberId",
+          "barberName",
+          "grossRevenue",
+          "netRevenue",
+          "totalTips",
+          "totalPlatformFees",
+          "bookingCount",
+          "averageOrderValue",
+          "tipsToRevenueRatio"
+        ]
+      },
+      "ServiceRevenueDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": { "type": "string" },
+          "serviceName": { "type": "string" },
+          "grossRevenue": { "type": "number" },
+          "netRevenue": { "type": "number" },
+          "bookingCount": { "type": "number" },
+          "averagePrice": { "type": "number" },
+          "durationMinutes": { "type": "number" },
+          "revenuePerMinute": { "type": "number" }
+        },
+        "required": [
+          "serviceId",
+          "serviceName",
+          "grossRevenue",
+          "netRevenue",
+          "bookingCount",
+          "averagePrice",
+          "durationMinutes",
+          "revenuePerMinute"
+        ]
+      },
+      "RevenueAnalyticsResponseDto": {
+        "type": "object",
+        "properties": {
+          "summary": { "$ref": "#/components/schemas/RevenueSummaryDto" },
+          "byPeriod": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PeriodRevenueDto" }
+          },
+          "byBarber": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/BarberRevenueDto" }
+          },
+          "byService": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ServiceRevenueDto" }
+          },
+          "previousSummary": {
+            "description": "Previous-period summary for comparison",
+            "allOf": [{ "$ref": "#/components/schemas/RevenueSummaryDto" }]
+          },
+          "previousByPeriod": {
+            "description": "Previous-period breakdown by time bucket",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PeriodRevenueDto" }
+          },
+          "generatedAt": { "type": "string" }
+        },
+        "required": [
+          "summary",
+          "byPeriod",
+          "byBarber",
+          "byService",
+          "generatedAt"
+        ]
+      },
+      "BarberPerformanceItemDto": {
+        "type": "object",
+        "properties": {
+          "barberId": { "type": "string" },
+          "barberName": { "type": "string" },
+          "grossRevenue": { "type": "number" },
+          "netRevenue": { "type": "number" },
+          "totalTips": { "type": "number" },
+          "totalPlatformFees": { "type": "number" },
+          "bookingCount": { "type": "number" },
+          "averageOrderValue": { "type": "number" },
+          "tipsToRevenueRatio": { "type": "number" },
+          "rank": { "type": "number" }
+        },
+        "required": [
+          "barberId",
+          "barberName",
+          "grossRevenue",
+          "netRevenue",
+          "totalTips",
+          "totalPlatformFees",
+          "bookingCount",
+          "averageOrderValue",
+          "tipsToRevenueRatio",
+          "rank"
+        ]
+      },
+      "BarberPerformanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "barbers": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/BarberPerformanceItemDto" }
+          },
+          "generatedAt": { "type": "string" }
+        },
+        "required": ["barbers", "generatedAt"]
+      },
+      "TimeSeriesDataPointDto": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string" },
+          "grossRevenue": { "type": "number" },
+          "netRevenue": { "type": "number" },
+          "bookingCount": { "type": "number" },
+          "totalTips": { "type": "number" },
+          "totalPlatformFees": { "type": "number" }
+        },
+        "required": [
+          "period",
+          "grossRevenue",
+          "netRevenue",
+          "bookingCount",
+          "totalTips",
+          "totalPlatformFees"
+        ]
+      },
+      "PeakPeriodDto": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string" },
+          "value": { "type": "number" }
+        },
+        "required": ["period", "value"]
+      },
+      "GrowthRateDto": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string" },
+          "growthRate": { "type": "number" }
+        },
+        "required": ["period", "growthRate"]
+      },
+      "TimeSeriesResponseDto": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TimeSeriesDataPointDto" }
+          },
+          "previous": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TimeSeriesDataPointDto" }
+          },
+          "peakPeriod": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/PeakPeriodDto" }]
+          },
+          "growthRates": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GrowthRateDto" }
+          },
+          "generatedAt": { "type": "string" }
+        },
+        "required": ["current", "growthRates", "generatedAt"]
+      },
+      "ServicePerformanceItemDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": { "type": "string" },
+          "serviceName": { "type": "string" },
+          "grossRevenue": { "type": "number" },
+          "netRevenue": { "type": "number" },
+          "bookingCount": { "type": "number" },
+          "averagePrice": { "type": "number" },
+          "durationMinutes": { "type": "number" },
+          "revenuePerMinute": { "type": "number" },
+          "rank": { "type": "number" }
+        },
+        "required": [
+          "serviceId",
+          "serviceName",
+          "grossRevenue",
+          "netRevenue",
+          "bookingCount",
+          "averagePrice",
+          "durationMinutes",
+          "revenuePerMinute",
+          "rank"
+        ]
+      },
+      "ServiceTrendPointDto": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string" },
+          "bookingCount": { "type": "number" },
+          "grossRevenue": { "type": "number" }
+        },
+        "required": ["period", "bookingCount", "grossRevenue"]
+      },
+      "ServicePerformanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServicePerformanceItemDto"
+            }
+          },
+          "trends": {
+            "description": "Demand trends over time",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ServiceTrendPointDto" }
+          },
+          "generatedAt": { "type": "string" }
+        },
+        "required": ["services", "trends", "generatedAt"]
+      },
+      "TopCustomerDto": {
+        "type": "object",
+        "properties": {
+          "clientId": { "type": "string" },
+          "clientName": { "type": "string" },
+          "totalRevenue": { "type": "number" },
+          "bookingCount": { "type": "number" }
+        },
+        "required": ["clientId", "clientName", "totalRevenue", "bookingCount"]
+      },
+      "CustomerAnalyticsResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalCustomers": { "type": "number" },
+          "newCustomers": { "type": "number" },
+          "returningCustomers": { "type": "number" },
+          "averageBookingsPerCustomer": { "type": "number" },
+          "topCustomers": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TopCustomerDto" }
+          },
+          "retentionRate": { "type": "number" },
+          "churnedCustomers": { "type": "number" },
+          "generatedAt": { "type": "string" }
+        },
+        "required": [
+          "totalCustomers",
+          "newCustomers",
+          "returningCustomers",
+          "averageBookingsPerCustomer",
+          "topCustomers",
+          "retentionRate",
+          "churnedCustomers",
+          "generatedAt"
+        ]
+      },
+      "BarberCapacityDto": {
+        "type": "object",
+        "properties": {
+          "barberId": { "type": "string" },
+          "barberName": { "type": "string" },
+          "totalAvailableMinutes": { "type": "number" },
+          "totalBookedMinutes": { "type": "number" },
+          "utilizationRate": { "type": "number" },
+          "lostRevenue": { "type": "number" }
+        },
+        "required": [
+          "barberId",
+          "barberName",
+          "totalAvailableMinutes",
+          "totalBookedMinutes",
+          "utilizationRate",
+          "lostRevenue"
+        ]
+      },
+      "CapacityResponseDto": {
+        "type": "object",
+        "properties": {
+          "barbers": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/BarberCapacityDto" }
+          },
+          "overallUtilizationRate": { "type": "number" },
+          "totalLostRevenue": { "type": "number" },
+          "generatedAt": { "type": "string" }
+        },
+        "required": [
+          "barbers",
+          "overallUtilizationRate",
+          "totalLostRevenue",
+          "generatedAt"
+        ]
+      },
+      "FinancialBreakdownResponseDto": {
+        "type": "object",
+        "properties": {
+          "bookingRevenue": {
+            "type": "number",
+            "description": "Total booking prices (excluding tips)"
+          },
+          "totalTips": {
+            "type": "number",
+            "description": "Total tips collected"
+          },
+          "grossRevenue": {
+            "type": "number",
+            "description": "Gross revenue (bookings + tips)"
+          },
+          "totalPlatformFees": {
+            "type": "number",
+            "description": "Total platform fees deducted"
+          },
+          "totalRefunds": {
+            "type": "number",
+            "description": "Total refunds issued"
+          },
+          "netRevenue": {
+            "type": "number",
+            "description": "Net revenue (gross - fees - refunds)"
+          },
+          "feeToRevenueRatio": {
+            "type": "number",
+            "description": "Platform fees as percentage of gross revenue"
+          },
+          "averageFeePerBooking": {
+            "type": "number",
+            "description": "Average platform fee per booking"
+          },
+          "refundRate": {
+            "type": "number",
+            "description": "Refund rate (refunds / gross revenue)"
+          },
+          "totalBookings": {
+            "type": "number",
+            "description": "Total number of bookings"
+          },
+          "generatedAt": { "type": "string" }
+        },
+        "required": [
+          "bookingRevenue",
+          "totalTips",
+          "grossRevenue",
+          "totalPlatformFees",
+          "totalRefunds",
+          "netRevenue",
+          "feeToRevenueRatio",
+          "averageFeePerBooking",
+          "refundRate",
+          "totalBookings",
+          "generatedAt"
+        ]
+      },
+      "ForecastPointDto": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string" },
+          "predictedRevenue": { "type": "number" },
+          "confidence": { "type": "object" }
+        },
+        "required": ["period", "predictedRevenue", "confidence"]
+      },
+      "AnomalyDto": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string" },
+          "actualRevenue": { "type": "number" },
+          "expectedRevenue": { "type": "number" },
+          "deviation": { "type": "number" },
+          "type": { "type": "object" }
+        },
+        "required": [
+          "period",
+          "actualRevenue",
+          "expectedRevenue",
+          "deviation",
+          "type"
+        ]
+      },
+      "SeasonalPatternDto": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string" },
+          "averageRevenue": { "type": "number" },
+          "relativeStrength": { "type": "number" }
+        },
+        "required": ["period", "averageRevenue", "relativeStrength"]
+      },
+      "ForecastingResponseDto": {
+        "type": "object",
+        "properties": {
+          "forecast": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ForecastPointDto" }
+          },
+          "anomalies": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnomalyDto" }
+          },
+          "seasonalPatterns": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SeasonalPatternDto" }
+          },
+          "movingAverage": { "type": "number" },
+          "trend": { "type": "object" },
+          "generatedAt": { "type": "string" }
+        },
+        "required": [
+          "forecast",
+          "anomalies",
+          "seasonalPatterns",
+          "movingAverage",
+          "trend",
+          "generatedAt"
+        ]
+      },
+      "FeeImportItemDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "External transaction/booking identifier"
+          },
+          "feeAmount": {
+            "type": "number",
+            "description": "Fee amount charged externally"
+          },
+          "transactionDate": {
+            "type": "string",
+            "description": "Transaction date (ISO format)"
+          }
+        },
+        "required": ["transactionId", "feeAmount"]
+      },
+      "FeeImportDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Array of external fee records",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FeeImportItemDto" }
+          }
+        },
+        "required": ["items"]
+      },
+      "ReconciliationMismatchDto": {
+        "type": "object",
+        "properties": {
+          "appointmentId": { "type": "string" },
+          "calculatedFee": { "type": "number" },
+          "actualFee": { "type": "number" },
+          "difference": { "type": "number" }
+        },
+        "required": [
+          "appointmentId",
+          "calculatedFee",
+          "actualFee",
+          "difference"
+        ]
+      },
+      "FeeReconciliationResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalMatched": { "type": "number" },
+          "totalMismatched": { "type": "number" },
+          "totalUnmatched": { "type": "number" },
+          "mismatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReconciliationMismatchDto"
+            }
+          },
+          "generatedAt": { "type": "string" }
+        },
+        "required": [
+          "totalMatched",
+          "totalMismatched",
+          "totalUnmatched",
+          "mismatches",
+          "generatedAt"
+        ]
+      },
+      "PlatformFeeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "establishmentId": { "type": "string" },
+          "feeType": {
+            "type": "string",
+            "enum": ["PERCENTAGE", "FLAT", "TIERED", "HYBRID"]
+          },
+          "percentageRate": { "type": "number", "nullable": true },
+          "flatAmount": { "type": "number", "nullable": true },
+          "minFee": { "type": "number", "nullable": true },
+          "maxFee": { "type": "number", "nullable": true },
+          "includesTips": { "type": "boolean" },
+          "effectiveFrom": { "format": "date-time", "type": "string" },
+          "effectiveTo": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": { "type": "boolean" },
+          "createdAt": { "format": "date-time", "type": "string" },
+          "updatedAt": { "format": "date-time", "type": "string" }
+        },
+        "required": [
+          "id",
+          "establishmentId",
+          "feeType",
+          "includesTips",
+          "effectiveFrom",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreatePlatformFeeDto": {
+        "type": "object",
+        "properties": {
+          "feeType": {
+            "type": "string",
+            "enum": ["PERCENTAGE", "FLAT", "TIERED", "HYBRID"],
+            "example": "PERCENTAGE"
+          },
+          "percentageRate": {
+            "type": "number",
+            "minimum": 0,
+            "example": 10,
+            "description": "Percentage rate (e.g., 10 for 10%)"
+          },
+          "flatAmount": {
+            "type": "number",
+            "minimum": 0,
+            "example": 2.5,
+            "description": "Flat fee amount"
+          },
+          "minFee": {
+            "type": "number",
+            "minimum": 0,
+            "example": 1,
+            "description": "Minimum fee cap"
+          },
+          "maxFee": {
+            "type": "number",
+            "minimum": 0,
+            "example": 50,
+            "description": "Maximum fee cap"
+          },
+          "includesTips": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether fee calculation includes tips"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "example": "2026-03-01T00:00:00.000Z",
+            "description": "Effective from date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "example": "2026-12-31T23:59:59.999Z",
+            "description": "Effective to date"
+          }
+        },
+        "required": ["feeType", "includesTips", "effectiveFrom"]
+      },
+      "UpdatePlatformFeeDto": {
+        "type": "object",
+        "properties": {
+          "feeType": {
+            "type": "string",
+            "enum": ["PERCENTAGE", "FLAT", "TIERED", "HYBRID"]
+          },
+          "percentageRate": { "type": "number", "minimum": 0 },
+          "flatAmount": { "type": "number", "minimum": 0 },
+          "minFee": { "type": "number", "minimum": 0 },
+          "maxFee": { "type": "number", "minimum": 0 },
+          "includesTips": { "type": "boolean" },
+          "effectiveTo": { "type": "string" },
+          "isActive": { "type": "boolean" }
+        }
+      },
+      "CreateExpenseDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "RENT",
+              "SUPPLIES",
+              "UTILITIES",
+              "MAINTENANCE",
+              "SALARY",
+              "OTHER"
+            ],
+            "description": "Expense category",
+            "example": "SUPPLIES"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Description of the expense",
+            "example": "Shaving cream restock"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0.01,
+            "description": "Expense amount",
+            "example": 150
+          },
+          "date": {
+            "type": "string",
+            "description": "Date of the expense (ISO 8601)",
+            "example": "2026-02-10"
+          },
+          "barberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Barber ID if this is a barber-specific expense"
+          }
+        },
+        "required": ["category", "description", "amount", "date"]
+      },
+      "UpdateExpenseDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "RENT",
+              "SUPPLIES",
+              "UTILITIES",
+              "MAINTENANCE",
+              "SALARY",
+              "OTHER"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Description of the expense"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0.01,
+            "description": "Expense amount"
+          },
+          "date": {
+            "type": "string",
+            "description": "Date of the expense (ISO 8601)"
+          },
+          "barberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Barber ID (null to remove association)"
+          }
+        }
+      },
+      "PublicEstablishmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "address": { "type": "string", "nullable": true },
+          "lat": { "type": "number", "nullable": true },
+          "lng": { "type": "number", "nullable": true }
+        },
+        "required": ["id", "name"]
+      },
+      "PublicServiceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "establishmentId": { "type": "string" },
+          "name": { "type": "string" },
+          "price": { "type": "number" },
+          "durationMinutes": { "type": "number" }
+        },
+        "required": [
+          "id",
+          "establishmentId",
+          "name",
+          "price",
+          "durationMinutes"
+        ]
+      },
+      "PublicBarberUserDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "required": ["id", "name"]
+      },
+      "PublicBarberResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "establishmentId": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/PublicBarberUserDto" }
+        },
+        "required": ["id", "establishmentId", "user"]
+      },
+      "CreatePublicAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "establishmentId": { "type": "string", "example": "clx0987654321" },
+          "barberId": { "type": "string", "example": "clx1234567890" },
+          "serviceId": { "type": "string", "example": "clxservice12345" },
+          "startsAt": {
+            "type": "string",
+            "example": "2026-03-15T10:00:00.000Z",
+            "description": "Appointment start time in ISO format"
+          },
+          "clientName": { "type": "string", "example": "Carlos Silva" },
+          "clientCpf": {
+            "type": "string",
+            "example": "12345678900",
+            "description": "Brazilian CPF (digits only)"
+          },
+          "clientPhone": {
+            "type": "string",
+            "pattern": "/^(\\+?55)?\\d{10,11}$/",
+            "example": "+5511999998888",
+            "description": "Phone number (Brazilian, E.164 format preferred)"
+          }
+        },
+        "required": [
+          "establishmentId",
+          "barberId",
+          "serviceId",
+          "startsAt",
+          "clientName",
+          "clientCpf"
+        ]
+      },
+      "RescheduleAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "string",
+            "example": "2026-03-20T14:00:00.000Z",
+            "description": "New appointment start time in ISO format"
+          }
+        },
+        "required": ["startsAt"]
+      }
+    }
+  }
+}

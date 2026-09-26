@@ -1,0 +1,4 @@
+# Google reCAPTCHA v3 *site* key committed in an early .env. Site keys are
+# public by design (they are embedded in every page that renders the widget);
+# the secret key lives only on the backend. .env is no longer tracked.
+b67655ee5417ccea5ffbb47b13601ae2149c98da:.env:generic-api-key:2

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 548" width="880" height="548" role="img" aria-labelledby="title desc" lang="pt-BR">
+<title id="title">Como o barbearia-frontend funciona</title>
+<desc id="desc">Três tipos de usuário usam o mesmo app React de página única. O cliente agenda online pelo assistente público em /, o barbeiro acompanha a agenda do dia em /barber e o gerente usa os painéis em /manager. Toda tela fala com o backend por um único cliente axios, que envia cookies e o cabeçalho CSRF e, diante de um 401, renova a sessão uma vez e repete a chamada. A API REST fica em outro repositório; quando ela emite um server-sent event, a agenda do barbeiro se atualiza sozinha. Com VITE_DEMO=true, o mesmo cliente fala com uma API em memória, e é assim que a demo do GitHub Pages roda sem backend. A animação segue um agendamento do cliente até a tela do barbeiro.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;fill:#e6edf3}
+.b{font-size:14px;font-weight:600}
+.h{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;fill:#e3b341}
+.m{font-size:12.5px;fill:#9198a1}
+.code{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;font-size:13px}
+.bg{fill:#0d1117;stroke:#30363d}
+.card{fill:#161b22;stroke:#30363d}
+.dash{fill:#161b22;stroke:#6e7681;stroke-dasharray:5 4}
+.zone{fill:#1c1a14;stroke:#4d4122}
+.e{fill:none;stroke:#6e7681;stroke-width:1.5;stroke-linejoin:round}
+.ed{fill:none;stroke:#6e7681;stroke-width:1.5;stroke-dasharray:5 4}
+.dot{fill:#e3b341}
+.halo{fill:#e3b341;opacity:.25}
+.hl{fill:none;stroke:#e3b341;stroke-width:2.5;stroke-linejoin:round;opacity:0}
+.pk{opacity:0}
+.pk-book{animation:pk-book 9s linear infinite}.hl-book{animation:hl-book 9s linear infinite}
+.pk-call{animation:pk-call 9s linear infinite}.hl-call{animation:hl-call 9s linear infinite}
+.pk-api{animation:pk-api 9s linear infinite}.hl-api{animation:hl-api 9s linear infinite}
+.pk-sse{animation:pk-sse 9s linear infinite}.hl-sse{animation:hl-sse 9s linear infinite}
+@keyframes pk-book{0%,2.00%{transform:translate(164px,64px);opacity:0}2.50%{opacity:1}7.17%{transform:translate(164px,140px);opacity:1}9.17%,100%{transform:translate(164px,140px);opacity:0}}
+@keyframes pk-call{0%,10.17%{transform:translate(164px,210px);opacity:0}10.67%{opacity:1}15.07%{transform:translate(164px,282px);opacity:1}30.44%{transform:translate(390px,282px);opacity:1}33.03%{transform:translate(390px,320px);opacity:1}35.03%,100%{transform:translate(390px,320px);opacity:0}}
+@keyframes pk-api{0%,36.03%{transform:translate(440px,390px);opacity:0}36.53%{opacity:1}39.43%{transform:translate(440px,440px);opacity:1}41.43%,100%{transform:translate(440px,440px);opacity:0}}
+@keyframes pk-sse{0%,42.43%{transform:translate(630px,474px);opacity:0}42.93%{opacity:1}58.21%{transform:translate(862px,474px);opacity:1}78.55%{transform:translate(862px,175px);opacity:1}81.00%{transform:translate(826px,175px);opacity:1}83.00%,100%{transform:translate(826px,175px);opacity:0}}
+@keyframes hl-book{0%,2.00%{opacity:0}3.00%,7.17%{opacity:.9}13.17%,100%{opacity:0}}
+@keyframes hl-call{0%,10.17%{opacity:0}11.17%,33.03%{opacity:.9}39.03%,100%{opacity:0}}
+@keyframes hl-api{0%,36.03%{opacity:0}37.03%,39.43%{opacity:.9}45.43%,100%{opacity:0}}
+@keyframes hl-sse{0%,42.43%{opacity:0}43.43%,81.00%{opacity:.9}87.00%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.pk,.hl{animation:none;display:none}}
+</style>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" fill="#6e7681"/></marker></defs>
+<rect x="0.5" y="0.5" width="879" height="547" rx="16" class="bg"/>
+<rect x="69" y="20" width="190" height="44" rx="22" class="card"/>
+<text x="164" y="47" text-anchor="middle"><tspan class="b">cliente</tspan><tspan class="m" dx="8">agenda online</tspan></text>
+<rect x="345" y="20" width="190" height="44" rx="22" class="card"/>
+<text x="440" y="47" text-anchor="middle"><tspan class="b">gerente</tspan><tspan class="m" dx="8">gestão da loja</tspan></text>
+<rect x="616" y="20" width="190" height="44" rx="22" class="card"/>
+<text x="711" y="47" text-anchor="middle"><tspan class="b">barbeiro</tspan><tspan class="m" dx="8">agenda do dia</tspan></text>
+<rect x="24" y="96" width="822" height="134" rx="14" class="zone"/>
+<text x="44" y="122" class="h">SPA React 19</text>
+<text x="178" y="122" class="m">SWR · Zustand · react-hook-form + zod</text>
+<rect x="44" y="140" width="240" height="70" rx="10" class="card"/>
+<text x="164" y="170" class="code" text-anchor="middle">/ · /confirm</text>
+<text x="164" y="192" class="m" text-anchor="middle">assistente de agendamento</text>
+<rect x="320" y="140" width="240" height="70" rx="10" class="card"/>
+<text x="440" y="170" class="code" text-anchor="middle">/manager/*</text>
+<text x="440" y="192" class="m" text-anchor="middle">financeiro · escala · usuários</text>
+<rect x="596" y="140" width="230" height="70" rx="10" class="card"/>
+<text x="711" y="170" class="code" text-anchor="middle">/barber</text>
+<text x="711" y="192" class="m" text-anchor="middle">agenda ao vivo</text>
+<rect x="250" y="320" width="380" height="70" rx="10" class="card"/>
+<text x="440" y="350" class="b" text-anchor="middle">cliente axios</text>
+<text x="440" y="372" class="m" text-anchor="middle">cookies + CSRF · 401 → renova 1× → repete</text>
+<rect x="250" y="440" width="380" height="70" rx="10" class="card"/>
+<text x="440" y="470" class="b" text-anchor="middle">API REST</text>
+<text x="440" y="492" class="m" text-anchor="middle">repositório de backend separado</text>
+<rect x="24" y="440" width="200" height="70" rx="10" class="dash"/>
+<text x="124" y="470" class="code" text-anchor="middle">VITE_DEMO=true</text>
+<text x="124" y="492" class="m" text-anchor="middle">API em memória · GitHub Pages</text>
+<path d="M164,64 L164,140" class="e" marker-end="url(#ah)"/>
+<path d="M164,210 L164,282 L390,282 L390,320" class="e" marker-end="url(#ah)"/>
+<path d="M440,390 L440,440" class="e" marker-end="url(#ah)"/>
+<path d="M440,64 L440,140" class="e" marker-end="url(#ah)"/>
+<path d="M711,64 L711,140" class="e" marker-end="url(#ah)"/>
+<path d="M440,210 L440,320" class="e" marker-end="url(#ah)"/>
+<path d="M711,210 L711,282 L490,282 L490,320" class="e" marker-end="url(#ah)"/>
+<path d="M300,390 V415 H124 V440" class="ed" marker-end="url(#ah)"/>
+<path d="M630,474 L862,474 L862,175 L826,175" class="ed" marker-end="url(#ah)"/>
+<text x="852" y="300" class="m" text-anchor="middle" transform="rotate(-90 852 300)">server-sent events</text>
+<path d="M164,64 L164,140" class="hl hl-book"/>
+<path d="M164,210 L164,282 L390,282 L390,320" class="hl hl-call"/>
+<path d="M440,390 L440,440" class="hl hl-api"/>
+<path d="M630,474 L862,474 L862,175 L826,175" class="hl hl-sse"/>
+<g class="pk pk-book"><circle r="9" class="halo"/><circle r="4.5" class="dot"/></g>
+<g class="pk pk-call"><circle r="9" class="halo"/><circle r="4.5" class="dot"/></g>
+<g class="pk pk-api"><circle r="9" class="halo"/><circle r="4.5" class="dot"/></g>
+<g class="pk pk-sse"><circle r="9" class="halo"/><circle r="4.5" class="dot"/></g>
+</svg>

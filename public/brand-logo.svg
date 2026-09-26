@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
+  <title id="t">Barbearia Fio de Navalha</title>
+  <!-- Fictional mark: a gold ring around an open straight razor. -->
+  <circle cx="32" cy="32" r="30" fill="#141414"/>
+  <circle cx="32" cy="32" r="27.5" fill="none" stroke="#d4a72c" stroke-width="2.5"/>
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#d4a72c" stroke-width="0.8" stroke-dasharray="1.5 2.5"/>
+  <!-- blade -->
+  <path d="M17 38.5 L36.5 19 C39.5 16 44.5 16.5 46 19.5 L27.5 38 Z" fill="#e8e3d8"/>
+  <path d="M19.5 36 L38 17.6" stroke="#9a948a" stroke-width="0.9" fill="none"/>
+  <!-- pivot and handle -->
+  <circle cx="27.5" cy="38" r="2.4" fill="#d4a72c"/>
+  <path d="M28.6 40.2 L44.5 48.5 C46.3 49.4 47.6 47.3 46.1 46.1 L30.3 36.6 Z" fill="#d4a72c"/>
+</svg>
